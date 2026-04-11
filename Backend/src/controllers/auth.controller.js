@@ -1,20 +1,51 @@
 import jwt from 'jsonwebtoken';
+import asyncHandler from 'express-async-handler';
 import User from '../models/user.model.js';
+
+// Guard: ensure JWT_SECRET is defined at startup
+if (!process.env.JWT_SECRET) {
+  throw new Error('❌ JWT_SECRET is not defined in environment variables');
+}
 
 // Generate JWT
 const generateToken = (id) =>
-  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: process.env.JWT_EXPIRES_IN });
+  jwt.sign({ id }, process.env.JWT_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+
+// Email format validator
+const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
 // @route POST /api/auth/register
-export const register = async (req, res) => {
+export const register = asyncHandler(async (req, res) => {
   const { username, email, password } = req.body;
 
-  if (!username || !email || !password)
-    return res.status(400).json({ message: 'All fields are required' });
+  // Field presence check
+  if (!username || !email || !password) {
+    res.status(400);
+    throw new Error('All fields are required');
+  }
 
+  // Email format check
+  if (!isValidEmail(email)) {
+    res.status(400);
+    throw new Error('Invalid email format');
+  }
+
+  // Password strength check
+  if (password.length < 6) {
+    res.status(400);
+    throw new Error('Password must be at least 6 characters');
+  }
+
+  // Duplicate email check
   const userExists = await User.findOne({ email });
-  if (userExists) return res.status(409).json({ message: 'Email already in use' });
+  if (userExists) {
+    res.status(409);
+    throw new Error('Email already in use');
+  }
 
+  // Create user
   const user = await User.create({ username, email, password });
 
   res.status(201).json({
@@ -29,18 +60,22 @@ export const register = async (req, res) => {
       },
     },
   });
-};
+});
 
 // @route POST /api/auth/login
-export const login = async (req, res) => {
+export const login = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
 
-  if (!email || !password)
-    return res.status(400).json({ message: 'Email and password are required' });
+  if (!email || !password) {
+    res.status(400);
+    throw new Error('Email and password are required');
+  }
 
   const user = await User.findOne({ email });
-  if (!user || !(await user.comparePassword(password)))
-    return res.status(401).json({ message: 'Invalid email or password' });
+  if (!user || !(await user.comparePassword(password))) {
+    res.status(401);
+    throw new Error('Invalid email or password');
+  }
 
   res.status(200).json({
     message: 'Login successful',
@@ -54,9 +89,11 @@ export const login = async (req, res) => {
       },
     },
   });
-};
+});
 
 // @route GET /api/auth/me
-export const getMe = async (req, res) => {
-  res.status(200).json({ data: req.user });
-};
+export const getMe = asyncHandler(async (req, res) => {
+  // Explicitly exclude password as a safety net
+  const user = await User.findById(req.user._id).select('-password');
+  res.status(200).json({ data: user });
+});
