@@ -11,10 +11,15 @@ const fileSchema = new mongoose.Schema(
     fileUrl: { type: String, required: true },  // Cloudinary URL
     publicId: { type: String, required: true }, // Cloudinary public_id (for deletion)
 
-    // Optional: auto-delete after this date
+    // null = never expires (free plan default)
+    // Set a date to enable auto-deletion via MongoDB TTL index
     expiresAt: { type: Date, default: null },
   },
   { timestamps: true }
 );
+
+// TTL index — MongoDB auto-deletes documents when expiresAt date is reached
+// Documents with expiresAt: null are ignored by this index
+fileSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 export default mongoose.model('File', fileSchema);

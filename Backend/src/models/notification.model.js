@@ -11,8 +11,14 @@ const notificationSchema = new mongoose.Schema(
       required: true,
     },
 
-    // Reference to the relevant document (connection or file)
+    // refModel tells Mongoose which collection refId points to
+    // This enables proper .populate('refId') later
     refId: { type: mongoose.Schema.Types.ObjectId, required: true },
+    refModel: {
+      type: String,
+      enum: ['Connection', 'File'],
+      required: true,
+    },
 
     isRead: { type: Boolean, default: false },
   },

@@ -15,4 +15,7 @@ const connectionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+// Prevent duplicate connections between the same two users at DB level
+connectionSchema.index({ requester: 1, recipient: 1 }, { unique: true });
+
 export default mongoose.model('Connection', connectionSchema);
