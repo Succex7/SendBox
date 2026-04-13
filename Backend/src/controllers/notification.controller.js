@@ -6,8 +6,9 @@ import Notification from '../models/notification.model.js';
 export const getNotifications = asyncHandler(async (req, res) => {
   const notifications = await Notification.find({ recipient: req.user._id })
     .populate('sender', 'username uniqueId')
-    // Dynamically populate refId based on refModel ('Connection' or 'File')
-    .populate({ path: 'refId', model: 'refModel' })
+    // refPath tells Mongoose to read the 'refModel' field value from each
+    // document to know which collection to populate from — 'Connection' or 'File'
+    .populate({ path: 'refId', refPath: 'refModel' })
     .sort({ createdAt: -1 });
 
   res.status(200).json({ data: notifications });
