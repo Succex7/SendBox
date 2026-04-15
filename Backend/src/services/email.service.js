@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
 
-// Validate email credentials at startup
+// Validate email credentials at startup — fail loudly before any request is made
 if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
   throw new Error('❌ Missing EMAIL_USER or EMAIL_PASS in environment variables');
 }
@@ -14,19 +14,20 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-// Verify transporter connection on startup — catches wrong credentials early
+// Verify transporter on startup — logs early if credentials are wrong
+// Non-blocking: server still starts, but email failures will show at runtime
 transporter.verify((error) => {
   if (error) {
-    console.error('❌ Email transporter failed:', error.message);
+    console.error('❌ Email transporter failed to connect:', error.message);
   } else {
     console.log('✅ Email transporter ready');
   }
 });
 
 /**
- * Send a 6-digit OTP to the user's email for password reset
- * @param {string} email - recipient email
- * @param {string} otp   - plain 6-digit OTP (NOT hashed — this is what user sees)
+ * Send a 6-digit OTP to a user's email for password reset
+ * @param {string} email - recipient email address
+ * @param {string} otp   - plain 6-digit OTP (NOT hashed — this is what the user sees)
  */
 export const sendOtpEmail = async (email, otp) => {
   const mailOptions = {
@@ -46,5 +47,10 @@ export const sendOtpEmail = async (email, otp) => {
     `,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+  } catch (error) {
+    // Throw a clean error — don't expose internal nodemailer details to callers
+    throw new Error('Failed to send reset email. Please try again later.');
+  }
 };
