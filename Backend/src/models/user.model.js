@@ -24,11 +24,16 @@ const userSchema = new mongoose.Schema(
 
     // Unique identifier users share with each other to connect
     uniqueId: { type: String, unique: true },
+
+    // Password Reset via OTP
+    resetOtp: { type: String, default: null },         // Stores HASHED OTP, never plain text
+    resetOtpExpiry: { type: Date, default: null },     // Expires 10 mins after generation
+    resetOtpAttempts: { type: Number, default: 0 },   // Brute force counter — max 5
   },
   { timestamps: true }
 );
 
-// Handle uniqueId generation in pre-save hook (async supported here)
+// Pre-save: Generate uniqueId for new users 
 userSchema.pre('save', async function (next) {
   if (!this.isNew) return next();
 
@@ -42,14 +47,14 @@ userSchema.pre('save', async function (next) {
   next();
 });
 
-// Hash password before saving
+// Pre-save: Hash password when modified 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
   next();
 });
 
-// Compare passwords
+//  Instance method: Compare passwords 
 userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
