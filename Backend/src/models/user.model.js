@@ -44,14 +44,13 @@ userSchema.pre('save', async function (next) {
   } while (exists);
 
   this.uniqueId = id;
-  next();
 });
 
 // Pre-save: Hash password when modified 
 userSchema.pre('save', async function (next) {
   if (!this.isModified('password')) return next();
   this.password = await bcrypt.hash(this.password, 12);
-  next();
+
 });
 
 //  Instance method: Compare passwords 
