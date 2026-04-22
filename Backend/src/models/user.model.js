@@ -34,8 +34,8 @@ const userSchema = new mongoose.Schema(
 );
 
 // Pre-save: Generate uniqueId for new users 
-userSchema.pre('save', async function (next) {
-  if (!this.isNew) return next();
+userSchema.pre('save', async function () {
+  if (!this.isNew) return;
 
   let id, exists;
   do {
@@ -47,8 +47,8 @@ userSchema.pre('save', async function (next) {
 });
 
 // Pre-save: Hash password when modified 
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+userSchema.pre('save', async function () {
+  if (!this.isModified('password')) return;
   this.password = await bcrypt.hash(this.password, 12);
 
 });
