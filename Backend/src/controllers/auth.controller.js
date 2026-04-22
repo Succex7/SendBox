@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto'; // For secure OTP generation
+import bcrypt from 'bcryptjs'; //for password hashing and OTP hashing
 import asyncHandler from 'express-async-handler';
 import User from '../models/user.model.js';
 import { sendOtpEmail } from '../services/email.service.js';
