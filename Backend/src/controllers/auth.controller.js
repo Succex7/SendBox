@@ -18,7 +18,35 @@ const generateToken = (id) =>
   });
 
 // Email format validator
-const isValidEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+// Allowed email domains — widely used and valid providers
+const ALLOWED_EMAIL_DOMAINS = new Set([
+  'gmail.com', 'googlemail.com',
+  'yahoo.com', 'yahoo.co.uk', 'yahoo.com.au', 'yahoo.ca', 'yahoo.fr', 'yahoo.de', 'yahoo.in',
+  'hotmail.com', 'hotmail.co.uk', 'hotmail.fr',
+  'outlook.com', 'outlook.co.uk',
+  'live.com', 'live.co.uk',
+  'msn.com',
+  'icloud.com', 'me.com', 'mac.com',
+  'protonmail.com', 'proton.me',
+  'aol.com',
+  'zoho.com',
+  'yandex.com', 'yandex.ru',
+  'mail.com',
+  'fastmail.com',
+  'tutanota.com', 'tuta.io',
+  'hey.com',
+  'pm.me',
+])
+
+const isValidEmail = (email) => {
+  // Basic format check
+  const formatValid = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+  if (!formatValid) return false
+
+  // Domain check
+  const domain = email.split('@')[1]?.toLowerCase()
+  return ALLOWED_EMAIL_DOMAINS.has(domain)
+}
 
 /**
  * Generate a cryptographically secure 6-digit OTP
@@ -233,3 +261,60 @@ export const resetPassword = asyncHandler(async (req, res) => {
 
   res.status(200).json({ message: 'Password reset successfully. You can now log in.' });
 });
+
+// @route POST /api/auth/verify-otp
+export const verifyOtp = asyncHandler(async (req, res) => {
+  const { email, otp } = req.body
+
+  if (!email || !otp) {
+    res.status(400)
+    throw new Error('Email and OTP are required')
+  }
+
+  if (!isValidEmail(email)) {
+    res.status(400)
+    throw new Error('Invalid email format')
+  }
+
+  const user = await User.findOne({ email: email.toLowerCase() })
+
+  // Same error for non-existent user — no info leakage
+  if (!user || !user.resetOtp || !user.resetOtpExpiry) {
+    res.status(400)
+    throw new Error('Invalid or expired reset code')
+  }
+
+  // Check expiry
+  if (user.resetOtpExpiry < Date.now()) {
+    user.resetOtp = null
+    user.resetOtpExpiry = null
+    user.resetOtpAttempts = 0
+    await user.save({ validateBeforeSave: false })
+    res.status(400)
+    throw new Error('Reset code has expired. Please request a new one.')
+  }
+
+  // Brute force protection
+  if (user.resetOtpAttempts >= 5) {
+    user.resetOtp = null
+    user.resetOtpExpiry = null
+    user.resetOtpAttempts = 0
+    await user.save({ validateBeforeSave: false })
+    res.status(429)
+    throw new Error('Too many failed attempts. Please request a new reset code.')
+  }
+
+  // Compare OTP
+  const isValid = await bcrypt.compare(String(otp), user.resetOtp)
+
+  if (!isValid) {
+    user.resetOtpAttempts += 1
+    await user.save({ validateBeforeSave: false })
+    res.status(400)
+    throw new Error(`Invalid reset code. ${5 - user.resetOtpAttempts} attempt(s) remaining.`)
+  }
+
+  // OTP valid — mark it as verified but don't clear it yet
+  // (still needed for the actual reset-password call)
+  res.status(200).json({ message: 'OTP verified successfully' })
+})
