@@ -23,10 +23,10 @@ function CopyId({ id }) {
   return (
     <button
       onClick={copy}
-      className="flex items-center gap-2 w-full bg-surface-container-high/50 border border-white/5 rounded-lg px-3 py-2 transition-all duration-200 hover:bg-surface-container-high cursor-pointer group"
+      className="flex items-center w-full gap-2 px-3 py-2 transition-all duration-200 border rounded-lg cursor-pointer bg-surface-container-high/50 border-white/5 hover:bg-surface-container-high group"
     >
-      <span className="font-mono text-xs font-bold text-primary tracking-widest flex-1 text-left truncate">{id}</span>
-      <span className="material-symbols-outlined text-sm text-outline group-hover:text-primary transition-colors duration-200">
+      <span className="flex-1 font-mono text-xs font-bold tracking-widest text-left truncate text-primary">{id}</span>
+      <span className="text-sm transition-colors duration-200 material-symbols-outlined text-outline group-hover:text-primary">
         {ok ? 'check' : 'content_copy'}
       </span>
     </button>
@@ -45,16 +45,16 @@ function ProfileDropdown({ user, onLogout, onClose }) {
     if (onClose) onClose()
   }
   return (
-    <div className="absolute top-12 right-0 w-64 glass-modal rounded-xl shadow-2xl z-50 overflow-hidden animate-scale-in border border-white/10">
+    <div className="absolute right-0 z-50 w-64 overflow-hidden border shadow-2xl top-12 glass-modal rounded-xl animate-scale-in border-white/10">
       {/* User info */}
       <div className="p-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary-container to-secondary-container flex items-center justify-center text-white font-black text-sm shrink-0">
+          <div className="flex items-center justify-center w-10 h-10 text-sm font-black text-white rounded-full bg-linear-to-br from-primary-container to-secondary-container shrink-0">
             {user?.username?.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
-            <p className="font-semibold text-on-surface text-sm truncate">{user?.username}</p>
-            <p className="text-xs text-outline truncate">{user?.email}</p>
+            <p className="text-sm font-semibold truncate text-on-surface">{user?.username}</p>
+            <p className="text-xs truncate text-outline">{user?.email}</p>
           </div>
         </div>
         <div className="mt-3">
@@ -65,16 +65,16 @@ function ProfileDropdown({ user, onLogout, onClose }) {
       <div className="p-2">
         <button
           onClick={handleSettings}
-          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all duration-200 cursor-pointer"
+          className="flex items-center w-full gap-2 px-3 py-2 text-sm transition-all duration-200 rounded-lg cursor-pointer text-on-surface-variant hover:bg-white/5 hover:text-on-surface"
         >
-          <span className="material-symbols-outlined text-lg">settings</span>
+          <span className="text-lg material-symbols-outlined">settings</span>
           Settings
         </button>
         <button
           onClick={handleLogout}
-          className="flex items-center gap-2 w-full px-3 py-2 rounded-lg text-sm text-error hover:bg-red-500 transition-all duration-200 cursor-pointer mt-1"
+          className="flex items-center w-full gap-2 px-3 py-2 mt-1 text-sm transition-all duration-200 rounded-lg cursor-pointer text-error hover:bg-red-500"
         >
-          <span className="material-symbols-outlined text-lg">logout</span>
+          <span className="text-lg material-symbols-outlined">logout</span>
           Log Out
         </button>
       </div>
@@ -118,14 +118,14 @@ export default function DashboardShell() {
     <div className="min-h-screen bg-background text-on-background">
 
       {/* ── Desktop Sidebar ─────────────────────────────── */}
-      <aside className="hidden md:flex fixed left-0 top-0 h-full w-64 z-40 sidebar-glass flex-col py-6 px-4">
+      <aside className="fixed top-0 left-0 z-40 flex-col hidden w-64 h-full px-4 py-6 md:flex sidebar-glass">
         {/* Logo */}
         <div className="flex items-center gap-3 px-2 mb-8">
-          <div className="w-9 h-9 bg-primary rounded-xl flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-on-primary text-xl">send</span>
+          <div className="flex items-center justify-center w-9 h-9 bg-primary rounded-xl shrink-0">
+            <span className="text-xl material-symbols-outlined text-on-primary">send</span>
           </div>
           <div>
-            <h2 className="text-white font-black text-lg tracking-tighter leading-none">SendBox</h2>
+            <h2 className="text-lg font-black leading-none tracking-tighter text-white">SendBox</h2>
             <p className="text-xs text-outline mt-0.5">File Transfer</p>
           </div>
         </div>
@@ -134,12 +134,12 @@ export default function DashboardShell() {
         <div className="px-2 mb-6">
           <div className="bg-surface-container-high/40 border border-white/5 rounded-DEFAULT p-3 space-y-2.5">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-linear-to-br from-primary-container to-secondary-container flex items-center justify-center text-white font-black text-sm shrink-0">
+              <div className="flex items-center justify-center w-10 h-10 text-sm font-black text-white rounded-full bg-linear-to-br from-primary-container to-secondary-container shrink-0">
                 {initials}
               </div>
               <div className="min-w-0">
-                <p className="font-semibold text-on-surface text-sm truncate">{user?.username}</p>
-                <p className="text-xs text-outline truncate">{user?.email}</p>
+                <p className="text-sm font-semibold truncate text-on-surface">{user?.username}</p>
+                <p className="text-xs truncate text-outline">{user?.email}</p>
               </div>
             </div>
             <CopyId id={user?.uniqueId} />
@@ -161,7 +161,7 @@ export default function DashboardShell() {
                 }`
               }
             >
-              <span className="material-symbols-outlined text-xl">{icon}</span>
+              <span className="text-xl material-symbols-outlined">{icon}</span>
               <span>{label}</span>
               {icon === 'notifications' && unread > 0 && (
                 <span className="ml-auto bg-primary text-on-primary text-xs font-black px-2 py-0.5 rounded-full">
@@ -178,17 +178,17 @@ export default function DashboardShell() {
             onClick={doLogout}
             className="flex items-center gap-3 px-4 py-2.5 w-full rounded-lg text-sm font-medium text-error hover:text-red-500 transition-all duration-200 cursor-pointer active:scale-[0.98]"
           >
-            <span className="material-symbols-outlined text-xl">logout</span>
+            <span className="text-xl material-symbols-outlined">logout</span>
             <span>Log Out</span>
           </button>
         </div>
       </aside>
 
       {/* ── Content ─────────────────────────────────────── */}
-      <div className="md:ml-64 flex flex-col min-h-screen">
+      <div className="flex flex-col min-h-screen md:ml-64">
 
         {/* Desktop topbar */}
-        <header className="hidden md:flex fixed top-0 left-64 right-0 h-16 z-30 header-glass items-center justify-between px-8">
+        <header className="fixed top-0 right-0 z-30 items-center justify-between hidden h-16 px-8 md:flex left-64 header-glass">
           {/* Functional search */}
           <SearchBar />
 
@@ -196,7 +196,7 @@ export default function DashboardShell() {
             {/* Notifications */}
             <NavLink
               to="/dashboard/notifications"
-              className="relative p-2 text-on-surface-variant hover:bg-white/5 hover:text-on-surface rounded-full transition-all duration-200 cursor-pointer"
+              className="relative p-2 transition-all duration-200 rounded-full cursor-pointer text-on-surface-variant hover:bg-white/5 hover:text-on-surface"
             >
               <span className="material-symbols-outlined">notifications</span>
               {unread > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />}
@@ -206,7 +206,7 @@ export default function DashboardShell() {
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() => setShowProfile(v => !v)}
-                className="w-9 h-9 rounded-full bg-linear-to-br from-primary-container to-secondary-container flex items-center justify-center text-white font-black text-xs cursor-pointer hover:ring-2 hover:ring-primary/40 transition-all duration-200 active:scale-95"
+                className="flex items-center justify-center text-xs font-black text-white transition-all duration-200 rounded-full cursor-pointer w-9 h-9 bg-linear-to-br from-primary-container to-secondary-container hover:ring-2 hover:ring-primary/40 active:scale-95"
                 title={user?.username}
               >
                 {initials}
@@ -219,22 +219,22 @@ export default function DashboardShell() {
         </header>
 
         {/* Mobile topbar */}
-        <header className="md:hidden fixed top-0 left-0 right-0 h-16 z-30 header-glass flex items-center justify-between px-5">
+        <header className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between h-16 px-5 md:hidden header-glass">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-on-primary text-lg">send</span>
+            <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-xl">
+              <span className="text-lg material-symbols-outlined text-on-primary">send</span>
             </div>
             <span className="text-lg font-black tracking-tighter text-white">SendBox</span>
           </div>
           <div className="flex items-center gap-2">
-            <NavLink to="/dashboard/notifications" className="relative p-2 text-on-surface-variant cursor-pointer">
+            <NavLink to="/dashboard/notifications" className="relative p-2 cursor-pointer text-on-surface-variant">
               <span className="material-symbols-outlined">notifications</span>
               {unread > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />}
             </NavLink>
             <div className="relative" ref={profileRef}>
               <button
                 onClick={() => setShowProfile(v => !v)}
-                className="w-9 h-9 rounded-full bg-linear-to-br from-primary-container to-secondary-container flex items-center justify-center text-white font-black text-xs cursor-pointer hover:ring-2 hover:ring-primary/40 transition-all duration-200"
+                className="flex items-center justify-center text-xs font-black text-white transition-all duration-200 rounded-full cursor-pointer w-9 h-9 bg-linear-to-br from-primary-container to-secondary-container hover:ring-2 hover:ring-primary/40"
               >
                 {initials}
               </button>
@@ -246,14 +246,14 @@ export default function DashboardShell() {
         </header>
 
         {/* Page content */}
-        <main className="flex-1 pt-16 pb-24 md:pt-24 md:pb-10 px-4 md:px-8">
-          <div className="max-w-300 mx-auto page-enter">
+        <main className="flex-1 px-4 pt-16 pb-24 md:pt-24 md:pb-10 md:px-8">
+          <div className="mx-auto max-w-300 page-enter">
             <Outlet />
           </div>
         </main>
 
         {/* ── Mobile Bottom Nav ──────────────────────────── */}
-        <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 sidebar-glass border-t border-white/6 pb-safe">
+        <nav className="fixed bottom-0 left-0 right-0 z-40 border-t md:hidden sidebar-glass border-white/6 pb-safe">
           <div className="flex items-center justify-around h-16 px-2">
             {NAV.map(({ to, icon, label, end }) => (
               <NavLink
@@ -332,31 +332,31 @@ function SearchBar() {
 
   return (
     <div className="relative w-80" ref={ref}>
-      <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-full px-4 py-2">
-        <span className="material-symbols-outlined text-outline text-lg">search</span>
+      <div className="flex items-center gap-2 px-4 py-2 border rounded-full bg-white/5 border-white/10">
+        <span className="text-lg material-symbols-outlined text-outline">search</span>
         <input
           value={query}
           onChange={onChange}
           onFocus={() => query && setOpen(true)}
           placeholder="Search files, transfers..."
-          className="bg-transparent border-none outline-none text-sm text-on-surface placeholder:text-outline w-full"
+          className="w-full text-sm bg-transparent border-none outline-none text-on-surface placeholder:text-outline"
         />
         {query && (
-          <button onClick={() => { setQuery(''); setOpen(false) }} className="text-outline hover:text-on-surface cursor-pointer">
-            <span className="material-symbols-outlined text-sm">close</span>
+          <button onClick={() => { setQuery(''); setOpen(false) }} className="cursor-pointer text-outline hover:text-on-surface">
+            <span className="text-sm material-symbols-outlined">close</span>
           </button>
         )}
       </div>
 
       {open && results.length > 0 && (
-        <div className="absolute top-12 left-0 right-0 glass-modal rounded-xl shadow-2xl z-50 overflow-hidden animate-scale-in border border-white/10">
+        <div className="absolute left-0 right-0 z-50 overflow-hidden border shadow-2xl top-12 glass-modal rounded-xl animate-scale-in border-white/10">
           {results.map(r => (
             <button
               key={r.path + r.label}
               onClick={() => go(r.path)}
-              className="flex items-center gap-3 w-full px-4 py-3 text-sm text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all duration-150 cursor-pointer"
+              className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-all duration-150 cursor-pointer text-on-surface-variant hover:bg-white/5 hover:text-on-surface"
             >
-              <span className="material-symbols-outlined text-primary text-lg">{r.icon}</span>
+              <span className="text-lg material-symbols-outlined text-primary">{r.icon}</span>
               {r.label}
             </button>
           ))}
@@ -364,8 +364,8 @@ function SearchBar() {
       )}
 
       {open && query && results.length === 0 && (
-        <div className="absolute top-12 left-0 right-0 glass-modal rounded-xl shadow-2xl z-50 p-4 border border-white/10 animate-scale-in">
-          <p className="text-sm text-outline text-center">No results for "{query}"</p>
+        <div className="absolute left-0 right-0 z-50 p-4 border shadow-2xl top-12 glass-modal rounded-xl border-white/10 animate-scale-in">
+          <p className="text-sm text-center text-outline">No results for "{query}"</p>
         </div>
       )}
     </div>
