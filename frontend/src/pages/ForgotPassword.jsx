@@ -48,62 +48,70 @@ export default function ForgotPassword() {
     }
   }
 
-  // Verify OTP with backend BEFORE advancing to password step
+  // Verify OTP 
   const verifyOtp = async () => {
-    const otpString = otp.join('')
-    if (otpString.length !== 6) return
-    setVerifying(true)
-    setOtpError('')
-    try {
-      // We verify by calling reset-password with a placeholder — 
-      // but since that changes the password, we need a different approach.
-      // Instead, we show the password form and let the final submit handle validation.
-      // The UX improvement: we don't move forward silently on wrong OTP.
-      // We do a dry-run verification: try to call reset with dummy pw just to check OTP validity.
-      // Better: just advance and handle error gracefully on final step.
-      // Since backend has brute force protection (max 5 attempts), this is secure.
-      setStep(2)
-    } catch (err) {
-      const msg = err.response?.data?.message || 'Invalid code'
-      setOtpError(msg)
-      toast.error(msg)
-    } finally {
-      setVerifying(false)
+  const otpString = otp.join('')
+  if (otpString.length !== 6) return
+  setVerifying(true)
+  setOtpError('')
+  try {
+    await authAPI.verifyOtp({ email, otp: otpString })
+    // Only advance if backend confirms OTP is valid
+    setStep(2)
+    toast.success('Code verified!')
+  } catch (err) {
+    const msg = err.response?.data?.message || 'Invalid reset code'
+    setOtpError(msg)
+    toast.error(msg)
+    // If too many attempts, go back to email step
+    if (err.response?.status === 429) {
+      setStep(0)
+      setOtp(['', '', '', '', '', ''])
     }
+  } finally {
+    setVerifying(false)
   }
+}
 
-  const step3 = async e => {
-    e.preventDefault()
-    if (pw.new !== pw.confirm) { toast.error('Passwords do not match'); return }
-    if (pw.new.length < 6) { toast.error('Password must be at least 6 characters'); return }
-    setLoading(true)
-    try {
-      await authAPI.resetPassword({ email, otp: otp.join(''), newPassword: pw.new })
-      setDone(true)
-      toast.success('Password reset successfully!')
-    } catch (err) {
-      const msg = err.response?.data?.message || 'Reset failed'
-      toast.error(msg)
-      // If OTP was wrong/expired, go back to OTP step
-      if (msg.toLowerCase().includes('code') || msg.toLowerCase().includes('otp') || msg.toLowerCase().includes('expired')) {
-        setStep(1)
-        setOtp(['', '', '', '', '', ''])
-        setOtpError(msg)
-      }
-    } finally { setLoading(false) }
+const step3 = async e => {
+  e.preventDefault()
+  if (pw.new !== pw.confirm) { toast.error('Passwords do not match'); return }
+  if (pw.new.length < 6) { toast.error('Password must be at least 6 characters'); return }
+  setLoading(true)
+  try {
+    await authAPI.resetPassword({ email, otp: otp.join(''), newPassword: pw.new })
+    setDone(true)
+    toast.success('Password reset successfully!')
+  } catch (err) {
+    const msg = err.response?.data?.message || 'Reset failed'
+    toast.error(msg)
+    // If OTP was wrong or expired, send back to OTP step
+    if (
+      msg.toLowerCase().includes('code') ||
+      msg.toLowerCase().includes('otp') ||
+      msg.toLowerCase().includes('expired') ||
+      msg.toLowerCase().includes('invalid')
+    ) {
+      setStep(1)
+      setOtp(['', '', '', '', '', ''])
+      setOtpError(msg)
+    }
+  } finally {
+    setLoading(false)
   }
+}
 
   if (done) return (
-    <div className="min-h-screen mesh-bg flex items-center justify-center p-6">
-      <div className="w-full max-w-md glass-modal rounded-2xl p-8 text-center animate-scale-in">
-        <div className="w-16 h-16 bg-secondary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-          <span className="material-symbols-outlined text-secondary text-4xl">check_circle</span>
+    <div className="flex items-center justify-center min-h-screen p-6 mesh-bg">
+      <div className="w-full max-w-md p-8 text-center glass-modal rounded-2xl animate-scale-in">
+        <div className="flex items-center justify-center w-16 h-16 mx-auto mb-4 rounded-full bg-secondary/10">
+          <span className="text-4xl text-green-500 material-symbols-outlined">check_circle</span>
         </div>
-        <h2 className="text-2xl font-black text-on-surface mb-2">Password Reset!</h2>
-        <p className="text-on-surface-variant mb-6">Your password has been updated. You can now sign in.</p>
+        <h2 className="mb-2 text-2xl font-black text-on-surface">Password Reset!</h2>
+        <p className="mb-6 text-on-surface-variant">Your password has been updated. You can now sign in.</p>
         <Link
           to="/login"
-          className="inline-flex items-center gap-2 px-6 py-3.5 bg-primary text-on-primary rounded-full font-black cursor-pointer transition-all duration-200 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:scale-[0.97]"
+          className="inline-flex items-center gap-2 px-6 py-3.5 bg-[#16274e] hover:bg-[#16274e]/70 text-on-primary rounded-full font-black cursor-pointer transition-all duration-200 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:scale-[0.97]"
         >
           Go to Sign In
           <span className="material-symbols-outlined">arrow_forward</span>
@@ -113,11 +121,11 @@ export default function ForgotPassword() {
   )
 
   return (
-    <div className="min-h-screen mesh-bg flex items-center justify-center p-6">
+    <div className="flex items-center justify-center min-h-screen p-6 mesh-bg">
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+          <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-xl">
             <span className="material-symbols-outlined text-on-primary">send</span>
           </div>
           <span className="text-2xl font-black tracking-tighter text-white">SendBox</span>
@@ -127,11 +135,11 @@ export default function ForgotPassword() {
           {/* Progress steps */}
           <div className="flex items-center gap-2 mb-7">
             {STEPS.map((s, i) => (
-              <div key={s} className="flex items-center gap-2 flex-1 last:flex-none">
+              <div key={s} className="flex items-center flex-1 gap-2 last:flex-none">
                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black flex-shrink-0 transition-all duration-300 ${
                   step > i ? 'bg-secondary text-on-secondary' : step === i ? 'bg-primary text-on-primary' : 'bg-surface-container-high text-outline'
                 }`}>
-                  {step > i ? <span className="material-symbols-outlined text-sm">check</span> : i + 1}
+                  {step > i ? <span className="text-sm material-symbols-outlined">check</span> : i + 1}
                 </div>
                 <span className={`text-xs font-medium hidden sm:block transition-colors duration-200 ${step === i ? 'text-on-surface' : 'text-outline'}`}>{s}</span>
                 {i < STEPS.length - 1 && (
@@ -144,23 +152,23 @@ export default function ForgotPassword() {
           {/* Step 0: Email */}
           {step === 0 && (
             <div className="animate-fade-in">
-              <h1 className="text-2xl font-black text-on-surface mb-1">Forgot Password?</h1>
-              <p className="text-sm text-on-surface-variant mb-6">Enter your email and we'll send you a 6-digit reset code.</p>
+              <h1 className="mb-1 text-2xl font-black text-on-surface">Forgot Password?</h1>
+              <p className="mb-6 text-sm text-on-surface-variant">Enter your email and we'll send you a 6-digit reset code.</p>
               <form onSubmit={step1} className="space-y-4">
                 <div className="relative group">
-                  <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors duration-200">mail</span>
+                  <span className="absolute transition-colors duration-200 -translate-y-1/2 material-symbols-outlined left-4 top-1/2 text-outline group-focus-within:text-primary">mail</span>
                   <input
                     type="email"
                     value={email}
                     onChange={e => setEmail(e.target.value)}
                     placeholder="your@email.com"
-                    className="glass-input pl-12 pr-4 py-4 rounded-t-lg cursor-text"
+                    className="py-4 pl-12 pr-4 rounded-t-lg glass-input cursor-text"
                   />
                 </div>
                 <button
                   type="submit"
                   disabled={loading || !email}
-                  className="w-full py-3.5 bg-primary text-on-primary rounded-full font-black cursor-pointer transition-all duration-200 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-[#16274e] hover:bg-[#16274e]/70 text-on-primary rounded-full font-black cursor-pointer transition-all duration-200 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <><span className="material-symbols-outlined animate-spin">progress_activity</span> Sending...</>
@@ -173,13 +181,13 @@ export default function ForgotPassword() {
           {/* Step 1: OTP */}
           {step === 1 && (
             <div className="animate-fade-in">
-              <h1 className="text-2xl font-black text-on-surface mb-1">Enter Reset Code</h1>
-              <p className="text-sm text-on-surface-variant mb-2">Check your email for the 6-digit code.</p>
-              <p className="text-xs text-primary mb-6 font-mono">⏱ Code expires in 10 minutes</p>
+              <h1 className="mb-1 text-2xl font-black text-on-surface">Enter Reset Code</h1>
+              <p className="mb-2 text-sm text-on-surface-variant">Check your email for the 6-digit code.</p>
+              <p className="mb-6 font-mono text-xs text-primary">⏱ Code expires in 10 minutes</p>
 
               {otpError && (
-                <div className="mb-4 p-3 bg-error-container/20 border border-error/20 rounded-xl flex items-center gap-2 text-sm text-error animate-scale-in">
-                  <span className="material-symbols-outlined text-lg">error</span>
+                <div className="flex items-center gap-2 p-3 mb-4 text-sm text-red-500 border bg-error-container/20 border-error/20 rounded-xl animate-scale-in">
+                  <span className="text-lg material-symbols-outlined">error</span>
                   {otpError}
                 </div>
               )}
@@ -205,7 +213,7 @@ export default function ForgotPassword() {
               <button
                 onClick={verifyOtp}
                 disabled={otp.join('').length !== 6 || verifying}
-                className="w-full py-3.5 bg-primary text-on-primary rounded-full font-black cursor-pointer transition-all duration-200 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                className="w-full py-3.5 bg-[#16274e] hover:bg-[#16274e]/70 text-on-primary rounded-full font-black cursor-pointer transition-all duration-200 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
                 {verifying ? (
                   <><span className="material-symbols-outlined animate-spin">progress_activity</span> Verifying...</>
@@ -214,9 +222,9 @@ export default function ForgotPassword() {
 
               <button
                 onClick={() => { setStep(0); setOtp(['', '', '', '', '', '']); setOtpError('') }}
-                className="w-full mt-3 text-sm text-on-surface-variant hover:text-on-surface cursor-pointer transition-colors duration-200 flex items-center justify-center gap-1"
+                className="flex items-center justify-center w-full gap-1 mt-3 text-sm transition-colors duration-200 cursor-pointer text-on-surface-variant hover:text-on-surface"
               >
-                <span className="material-symbols-outlined text-sm">arrow_back</span> Use different email
+                <span className="text-sm material-symbols-outlined">arrow_back</span> Use different email
               </button>
             </div>
           )}
@@ -224,26 +232,26 @@ export default function ForgotPassword() {
           {/* Step 2: New password */}
           {step === 2 && (
             <div className="animate-fade-in">
-              <h1 className="text-2xl font-black text-on-surface mb-1">New Password</h1>
-              <p className="text-sm text-on-surface-variant mb-6">Choose a strong new password.</p>
+              <h1 className="mb-1 text-2xl font-black text-on-surface">New Password</h1>
+              <p className="mb-6 text-sm text-on-surface-variant">Choose a strong new password.</p>
               <form onSubmit={step3} className="space-y-4">
                 {[
                   { id: 'new', label: 'New Password', placeholder: 'Min. 6 characters' },
                   { id: 'confirm', label: 'Confirm Password', placeholder: 'Repeat password' },
                 ].map(f => (
                   <div key={f.id} className="relative group">
-                    <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-outline group-focus-within:text-primary transition-colors duration-200">lock</span>
+                    <span className="absolute transition-colors duration-200 -translate-y-1/2 material-symbols-outlined left-4 top-1/2 text-outline group-focus-within:text-primary">lock</span>
                     <input
                       type={showPw ? 'text' : 'password'}
                       value={pw[f.id]}
                       onChange={e => setPw(p => ({ ...p, [f.id]: e.target.value }))}
                       placeholder={f.placeholder}
-                      className="glass-input pl-12 pr-12 py-4 rounded-t-lg cursor-text"
+                      className="py-4 pl-12 pr-12 rounded-t-lg glass-input cursor-text"
                     />
                     <button
                       type="button"
                       onClick={() => setShowPw(v => !v)}
-                      className="absolute right-4 top-1/2 -translate-y-1/2 text-outline cursor-pointer transition-colors duration-200 hover:text-on-surface"
+                      className="absolute transition-colors duration-200 -translate-y-1/2 cursor-pointer right-4 top-1/2 text-outline hover:text-on-surface"
                     >
                       <span className="material-symbols-outlined">{showPw ? 'visibility_off' : 'visibility'}</span>
                     </button>
@@ -252,7 +260,7 @@ export default function ForgotPassword() {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full py-3.5 bg-primary text-on-primary rounded-full font-black cursor-pointer transition-all duration-200 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  className="w-full py-3.5 bg-[#16274e] hover:bg-[#16274e]/70 text-on-primary rounded-full font-black cursor-pointer transition-all duration-200 hover:opacity-90 hover:shadow-xl hover:shadow-primary/30 hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0 disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
                   {loading ? (
                     <><span className="material-symbols-outlined animate-spin">progress_activity</span> Resetting...</>
@@ -262,9 +270,9 @@ export default function ForgotPassword() {
             </div>
           )}
 
-          <p className="text-center text-sm text-on-surface-variant mt-5">
+          <p className="mt-5 text-sm text-center text-on-surface-variant">
             Remember it?{' '}
-            <Link to="/login" className="text-primary font-semibold hover:underline cursor-pointer transition-colors duration-200">
+            <Link to="/login" className="font-semibold transition-colors duration-200 cursor-pointer text-primary hover:underline">
               Sign in
             </Link>
           </p>

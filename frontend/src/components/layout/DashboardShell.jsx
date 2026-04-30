@@ -2,6 +2,7 @@ import { Outlet, NavLink, useNavigate, Link } from 'react-router-dom'
 import { useState, useEffect, useRef } from 'react'
 import { useAuth } from '../../context/AuthContext.jsx'
 import { notificationsAPI } from '../../api/notifications.js'
+import { filesAPI } from '../../api/files.js'
 import toast from 'react-hot-toast'
 
 const NAV = [
@@ -35,21 +36,18 @@ function CopyId({ id }) {
 
 function ProfileDropdown({ user, onLogout, onClose }) {
   const navigate = useNavigate()
-  // Remove stopPropagation, just call actions directly
-  const handleSettings = () => {
-    navigate('/dashboard/settings')
-    if (onClose) onClose()
+
+  const goTo = (path) => {
+    navigate(path)
+    onClose()
   }
-  const handleLogout = () => {
-    if (onLogout) onLogout()
-    if (onClose) onClose()
-  }
+
   return (
     <div className="absolute right-0 z-50 w-64 overflow-hidden border shadow-2xl top-12 glass-modal rounded-xl animate-scale-in border-white/10">
       {/* User info */}
       <div className="p-4 border-b border-white/5">
         <div className="flex items-center gap-3">
-          <div className="flex items-center justify-center w-10 h-10 text-sm font-black text-white rounded-full bg-linear-to-br from-primary-container to-secondary-container shrink-0">
+          <div className="flex items-center justify-center flex-shrink-0 w-10 h-10 text-sm font-black text-white rounded-full bg-gradient-to-br from-primary-container to-secondary-container">
             {user?.username?.slice(0, 2).toUpperCase()}
           </div>
           <div className="min-w-0">
@@ -61,18 +59,19 @@ function ProfileDropdown({ user, onLogout, onClose }) {
           <CopyId id={user?.uniqueId} />
         </div>
       </div>
+
       {/* Actions */}
       <div className="p-2">
         <button
-          onClick={handleSettings}
-          className="flex items-center w-full gap-2 px-3 py-2 text-sm transition-all duration-200 rounded-lg cursor-pointer text-on-surface-variant hover:bg-white/5 hover:text-on-surface"
+          onClick={() => goTo('/dashboard/settings')}
+          className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm text-on-surface-variant hover:bg-white/5 hover:text-on-surface transition-all duration-200 cursor-pointer"
         >
           <span className="text-lg material-symbols-outlined">settings</span>
           Settings
         </button>
         <button
-          onClick={handleLogout}
-          className="flex items-center w-full gap-2 px-3 py-2 mt-1 text-sm transition-all duration-200 rounded-lg cursor-pointer text-error hover:bg-red-500"
+          onClick={() => { onLogout(); onClose() }}
+          className="flex items-center gap-2 w-full px-3 py-2.5 rounded-lg text-sm text-error hover:bg-red-500 transition-all duration-200 cursor-pointer mt-1"
         >
           <span className="text-lg material-symbols-outlined">logout</span>
           Log Out
@@ -87,7 +86,8 @@ export default function DashboardShell() {
   const navigate = useNavigate()
   const [unread, setUnread] = useState(0)
   const [showProfile, setShowProfile] = useState(false)
-  const profileRef = useRef(null)
+  const desktopProfileRef = useRef(null)
+  const mobileProfileRef = useRef(null)
 
   useEffect(() => {
     notificationsAPI.getAll()
@@ -97,14 +97,16 @@ export default function DashboardShell() {
 
   // Close dropdown when clicking outside
   useEffect(() => {
-    const handler = e => {
-      if (profileRef.current && !profileRef.current.contains(e.target)) {
-        setShowProfile(false)
-      }
+  const handler = e => {
+    const clickedDesktop = desktopProfileRef.current && !desktopProfileRef.current.contains(e.target)
+    const clickedMobile = mobileProfileRef.current && !mobileProfileRef.current.contains(e.target)
+    if (clickedDesktop && clickedMobile) {
+      setShowProfile(false)
     }
-    document.addEventListener('mousedown', handler)
-    return () => document.removeEventListener('mousedown', handler)
-  }, [])
+  }
+  document.addEventListener('mousedown', handler)
+  return () => document.removeEventListener('mousedown', handler)
+}, [])
 
   const doLogout = () => {
     logout()
@@ -203,7 +205,7 @@ export default function DashboardShell() {
             </NavLink>
 
             {/* Profile avatar — clickable */}
-            <div className="relative" ref={profileRef}>
+            <div className="relative" ref={desktopProfileRef}>
               <button
                 onClick={() => setShowProfile(v => !v)}
                 className="flex items-center justify-center text-xs font-black text-white transition-all duration-200 rounded-full cursor-pointer w-9 h-9 bg-linear-to-br from-primary-container to-secondary-container hover:ring-2 hover:ring-primary/40 active:scale-95"
@@ -231,7 +233,7 @@ export default function DashboardShell() {
               <span className="material-symbols-outlined">notifications</span>
               {unread > 0 && <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-primary rounded-full" />}
             </NavLink>
-            <div className="relative" ref={profileRef}>
+            <div className="relative" ref={mobileProfileRef}>
               <button
                 onClick={() => setShowProfile(v => !v)}
                 className="flex items-center justify-center text-xs font-black text-white transition-all duration-200 rounded-full cursor-pointer w-9 h-9 bg-linear-to-br from-primary-container to-secondary-container hover:ring-2 hover:ring-primary/40"
@@ -268,12 +270,19 @@ export default function DashboardShell() {
               >
                 {({ isActive }) => (
                   <>
-                    <span className={`material-symbols-outlined text-xl ${isActive ? 'text-primary' : ''}`}>{icon}</span>
-                    <span className={`text-[10px] font-medium ${isActive ? 'font-bold' : ''}`}>{label}</span>
+                    {/* Active top bar indicator */}
+                    {isActive && (
+                      <span className="absolute top-0 left-1/2 -translate-x-1/2 w-8 h-[2.5px] bg-[#adc6ff] rounded-full" />
+                    )}
+                    <span className={`material-symbols-outlined text-xl transition-all duration-200 ${isActive ? 'text-[#adc6ff]' : ''}`}>
+                      {icon}
+                    </span>
+                    <span className={`text-[10px] transition-all duration-200 ${isActive ? 'font-bold text-[#adc6ff]' : 'font-medium'}`}>
+                      {label}
+                    </span>
                     {icon === 'notifications' && unread > 0 && (
                       <span className="absolute top-1.5 right-2 w-2 h-2 bg-primary rounded-full" />
                     )}
-                    {isActive && <span className="absolute -bottom-0.5 w-1 h-1 bg-primary rounded-full" />}
                   </>
                 )}
               </NavLink>
@@ -288,8 +297,10 @@ export default function DashboardShell() {
 // ── Functional Search Bar ──────────────────────────────────
 function SearchBar() {
   const [query, setQuery] = useState('')
-  const [results, setResults] = useState([])
+  const [results, setResults] = useState({ pages: [], files: [] })
   const [open, setOpen] = useState(false)
+  const [fileData, setFileData] = useState([])
+  const [loadingFiles, setLoadingFiles] = useState(false)
   const navigate = useNavigate()
   const ref = useRef(null)
 
@@ -300,9 +311,17 @@ function SearchBar() {
     { label: 'Notifications', path: '/dashboard/notifications', icon: 'notifications' },
     { label: 'Settings', path: '/dashboard/settings', icon: 'settings' },
     { label: 'Send a File', path: '/dashboard/connections', icon: 'send' },
-    { label: 'View Transfer History', path: '/dashboard/files', icon: 'history' },
     { label: 'Add Connection', path: '/dashboard/connections', icon: 'person_add' },
   ]
+
+  // Load file history once on mount for search
+    useEffect(() => {
+      setLoadingFiles(true)
+      filesAPI.getHistory()
+        .then(r => setFileData(r.data.data))
+        .catch(() => {})
+        .finally(() => setLoadingFiles(false))
+    }, [])
 
   useEffect(() => {
     const handler = e => {
@@ -315,11 +334,18 @@ function SearchBar() {
   const onChange = e => {
     const q = e.target.value
     setQuery(q)
-    if (q.trim().length > 0) {
-      setResults(pages.filter(p => p.label.toLowerCase().includes(q.toLowerCase())))
+    if (q.trim().length >= 2) {
+      const ql = q.toLowerCase()
+      const matchedPages = pages.filter(p => p.label.toLowerCase().includes(ql))
+      const matchedFiles = fileData.filter(f =>
+        f.fileName?.toLowerCase().includes(ql) ||
+        f.sender?.username?.toLowerCase().includes(ql) ||
+        f.recipient?.username?.toLowerCase().includes(ql)
+      ).slice(0, 5)
+      setResults({ pages: matchedPages, files: matchedFiles })
       setOpen(true)
     } else {
-      setResults([])
+      setResults({ pages: [], files: [] })
       setOpen(false)
     }
   }
@@ -330,6 +356,14 @@ function SearchBar() {
     setOpen(false)
   }
 
+  const fmt = b => {
+    if (!b) return ''
+    if (b < 1048576) return `${(b / 1024).toFixed(0)} KB`
+    return `${(b / 1048576).toFixed(1)} MB`
+  }
+
+  const hasResults = results.pages.length > 0 || results.files.length > 0
+
   return (
     <div className="relative w-80" ref={ref}>
       <div className="flex items-center gap-2 px-4 py-2 border rounded-full bg-white/5 border-white/10">
@@ -337,7 +371,7 @@ function SearchBar() {
         <input
           value={query}
           onChange={onChange}
-          onFocus={() => query && setOpen(true)}
+          onFocus={() => query.length >= 2 && setOpen(true)}
           placeholder="Search files, transfers..."
           className="w-full text-sm bg-transparent border-none outline-none text-on-surface placeholder:text-outline"
         />
@@ -348,24 +382,58 @@ function SearchBar() {
         )}
       </div>
 
-      {open && results.length > 0 && (
-        <div className="absolute left-0 right-0 z-50 overflow-hidden border shadow-2xl top-12 glass-modal rounded-xl animate-scale-in border-white/10">
-          {results.map(r => (
-            <button
-              key={r.path + r.label}
-              onClick={() => go(r.path)}
-              className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-all duration-150 cursor-pointer text-on-surface-variant hover:bg-white/5 hover:text-on-surface"
-            >
-              <span className="text-lg material-symbols-outlined text-primary">{r.icon}</span>
-              {r.label}
-            </button>
-          ))}
-        </div>
-      )}
+      {open && (
+        <div className="absolute left-0 right-0 z-50 overflow-hidden overflow-y-auto border shadow-2xl top-12 glass-modal rounded-xl animate-scale-in border-white/10 max-h-80">
 
-      {open && query && results.length === 0 && (
-        <div className="absolute left-0 right-0 z-50 p-4 border shadow-2xl top-12 glass-modal rounded-xl border-white/10 animate-scale-in">
-          <p className="text-sm text-center text-outline">No results for "{query}"</p>
+          {/* Files section */}
+          {results.files.length > 0 && (
+            <>
+              <div className="px-4 py-2 border-b border-white/5">
+                <p className="text-xs font-semibold tracking-wider uppercase text-outline">Files</p>
+              </div>
+              {results.files.map(f => (
+                <button
+                  key={f._id}
+                  onClick={() => go('/dashboard/files')}
+                  className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-all duration-150 border-b cursor-pointer text-on-surface-variant hover:bg-white/5 hover:text-on-surface border-white/3"
+                >
+                  <span className="text-lg material-symbols-outlined text-primary">insert_drive_file</span>
+                  <div className="flex-1 min-w-0 text-left">
+                    <p className="text-xs font-medium truncate text-on-surface">{f.fileName}</p>
+                    <p className="text-[10px] text-outline">
+                      {fmt(f.fileSize)} • {f.sender?.username}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </>
+          )}
+
+          {/* Pages section */}
+          {results.pages.length > 0 && (
+            <>
+              <div className="px-4 py-2 border-b border-white/5">
+                <p className="text-xs font-semibold tracking-wider uppercase text-outline">Navigation</p>
+              </div>
+              {results.pages.map(r => (
+                <button
+                  key={r.path + r.label}
+                  onClick={() => go(r.path)}
+                  className="flex items-center w-full gap-3 px-4 py-3 text-sm transition-all duration-150 cursor-pointer text-on-surface-variant hover:bg-white/5 hover:text-on-surface"
+                >
+                  <span className="text-lg material-symbols-outlined text-primary">{r.icon}</span>
+                  {r.label}
+                </button>
+              ))}
+            </>
+          )}
+
+          {/* No results */}
+          {!hasResults && (
+            <div className="p-4">
+              <p className="text-sm text-center text-outline">No results for "{query}"</p>
+            </div>
+          )}
         </div>
       )}
     </div>
