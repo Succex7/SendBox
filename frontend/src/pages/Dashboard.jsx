@@ -38,9 +38,22 @@ export default function Dashboard() {
       .finally(() => setLoading(false))
   }, [])
 
-  const uid = user?._id
-  const sent = files.filter(f => f.sender?._id === uid || f.sender?.id === uid)
-  const recv = files.filter(f => f.recipient?._id === uid || f.recipient?.id === uid)
+  const uid = user?._id || user?.id
+  // Reliable ID comparison — handles both string and ObjectId forms
+    const isSameUser = (fileUser, authUserId) => {
+      if (!fileUser || !authUserId) return false
+      const fid = fileUser._id?.toString() || fileUser.id?.toString() || fileUser?.toString()
+      return fid === authUserId.toString()
+    }
+
+    // A file is SENT if current user is the SENDER
+    const sent = files.filter(f => isSameUser(f.sender, uid))
+
+    // A file is RECEIVED if current user is the RECIPIENT and NOT the sender
+    // (prevents double-counting if same user somehow appears on both sides)
+    const recv = files.filter(f =>
+      isSameUser(f.recipient, uid) && !isSameUser(f.sender, uid)
+    )
   const recent = [...files].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)).slice(0, 5)
 
   const stats = [
