@@ -1,7 +1,19 @@
 import { useState } from 'react'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useNavigate } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import toast from 'react-hot-toast'
+
+// Animation variants
+const fadeUp = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } },
+}
+
+const stagger = {
+  hidden: {},
+  visible: { transition: { staggerChildren: 0.1, delayChildren: 0.05 } },
+}
 
 export default function Settings() {
   const { user, logout, updateUser } = useAuth()
@@ -30,8 +42,6 @@ export default function Settings() {
       return
     }
     setSavingUsername(true)
-    // NOTE: Add PUT /api/auth/update-username endpoint later
-    // For now, update local state
     setTimeout(() => {
       updateUser({ ...user, username: newUsername.trim() })
       toast.success('Username updated!')
@@ -43,16 +53,21 @@ export default function Settings() {
   const initials = user?.username?.slice(0, 2).toUpperCase() || 'SB'
 
   return (
-    <div className="py-4 animate-fade-in">
-      {/* Centered container */}
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div>
+    <div className="py-4">
+      <motion.div
+        className="max-w-2xl mx-auto space-y-6"
+        variants={stagger}
+        initial="hidden"
+        animate="visible"
+      >
+        {/* Page title */}
+        <motion.div variants={fadeUp}>
           <h1 className="text-3xl font-black tracking-tighter text-on-background">Settings</h1>
           <p className="text-on-surface-variant mt-1">Manage your account preferences.</p>
-        </div>
+        </motion.div>
 
         {/* Profile */}
-        <div className="glass-card rounded-xl p-6 space-y-5">
+        <motion.div variants={fadeUp} className="glass-card rounded-xl p-6 space-y-5">
           <h2 className="font-bold text-on-surface text-lg flex items-center gap-2">
             <span className="material-symbols-outlined text-primary">person</span>
             Profile
@@ -89,10 +104,10 @@ export default function Settings() {
               Share this ID with people you want to connect with.
             </p>
           </div>
-        </div>
+        </motion.div>
 
-        {/* Account info — editable username */}
-        <div className="glass-card rounded-xl p-6 space-y-4">
+        {/* Account info */}
+        <motion.div variants={fadeUp} className="glass-card rounded-xl p-6 space-y-4">
           <h2 className="font-bold text-on-surface text-lg flex items-center gap-2">
             <span className="material-symbols-outlined text-secondary">account_circle</span>
             Account Information
@@ -150,10 +165,10 @@ export default function Settings() {
               <p className="text-sm font-semibold text-on-surface">{user?.email}</p>
             </div>
           </div>
-        </div>
+        </motion.div>
 
         {/* About */}
-        <div className="glass-card rounded-xl p-6 space-y-3">
+        <motion.div variants={fadeUp} className="glass-card rounded-xl p-6 space-y-3">
           <h2 className="font-bold text-on-surface text-lg flex items-center gap-2">
             <span className="material-symbols-outlined text-tertiary">info</span>
             About SendBox
@@ -169,10 +184,13 @@ export default function Settings() {
               </div>
             ))}
           </div>
-        </div>
+        </motion.div>
 
-        {/* ⚠️ Danger Zone — properly red */}
-        <div className="rounded-xl p-6 border-2 border-red-500/40 bg-red-500/5">
+        {/* Danger Zone */}
+        <motion.div
+          variants={fadeUp}
+          className="rounded-xl p-6 border-2 border-red-500/40 bg-red-500/5"
+        >
           <h2 className="font-bold text-red-400 mb-1 flex items-center gap-2 text-lg">
             <span className="material-symbols-outlined text-red-400">warning</span>
             Danger Zone
@@ -182,13 +200,13 @@ export default function Settings() {
           </p>
           <button
             onClick={doLogout}
-            className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white border border-red-500 rounded-full text-sm font-black cursor-pointer transition-all duration-200 hover:bg-red-500 hover:shadow-lg hover:shadow-red-500/30 hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0"
+            className="flex items-center gap-2 px-6 py-3 bg-red-700 text-white border border-red-500 rounded-full text-sm font-black cursor-pointer transition-all duration-200 hover:bg-red-700 hover:shadow-lg hover:shadow-red-500/20 hover:-translate-y-0.5 active:scale-[0.97] active:translate-y-0"
           >
             <span className="material-symbols-outlined text-lg">logout</span>
             Log Out of SendBox
           </button>
-        </div>
-      </div>
+        </motion.div>
+      </motion.div>
     </div>
   )
 }
