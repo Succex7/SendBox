@@ -4,7 +4,7 @@ SendBox is a cross-platform file transfer application that enables users to send
 
 ## Live Demo
 
-> Coming soon — link will be updated on deployment.
+https://send-box-blush.vercel.app
 
 ---
 
@@ -230,10 +230,10 @@ CLIENT_ORIGIN=http://localhost:5173
 
 - [x] Backend architecture and database models
 - [x] User authentication system
-- [ ] Connection system
-- [ ] File transfer system
-- [ ] Notification system
-- [ ] Frontend UI
+- [X] Connection system
+- [X] File transfer system
+- [X] Notification system
+- [X] Frontend UI
 - [ ] Mobile application (React Native)
 - [ ] File expiry system
 
