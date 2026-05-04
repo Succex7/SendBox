@@ -123,11 +123,13 @@ export default function DashboardShell() {
       <aside className="fixed top-0 left-0 z-40 flex-col hidden w-64 h-full px-4 py-6 md:flex sidebar-glass">
         {/* Logo */}
         <div className="flex items-center gap-3 px-2 mb-8">
-          <div className="flex items-center justify-center w-9 h-9 bg-primary rounded-xl shrink-0">
-            <span className="text-xl material-symbols-outlined text-on-primary">send</span>
-          </div>
+          <img
+            src="/icons/icon-192x192.png"
+            alt="SendBox"
+            className="w-9 h-9 rounded-xl object-cover flex-shrink-0"
+          />
           <div>
-            <h2 className="text-lg font-black leading-none tracking-tighter text-white">SendBox</h2>
+            <h2 className="text-white font-black text-lg tracking-tighter leading-none">SendBox</h2>
             <p className="text-xs text-outline mt-0.5">File Transfer</p>
           </div>
         </div>
@@ -222,12 +224,14 @@ export default function DashboardShell() {
 
         {/* Mobile topbar */}
         <header className="fixed top-0 left-0 right-0 z-30 flex items-center justify-between h-16 px-5 md:hidden header-glass">
-          <div className="flex items-center gap-2.5">
-            <div className="flex items-center justify-center w-8 h-8 bg-primary rounded-xl">
-              <span className="text-lg material-symbols-outlined text-on-primary">send</span>
-            </div>
-            <span className="text-lg font-black tracking-tighter text-white">SendBox</span>
-          </div>
+      <div className="flex items-center gap-2.5">
+        <img
+          src="/icons/icon-192x192.png"
+          alt="SendBox"
+          className="w-8 h-8 rounded-xl object-cover"
+        />
+        <span className="text-lg font-black tracking-tighter text-white">SendBox</span>
+      </div>
           <div className="flex items-center gap-2">
             <NavLink to="/dashboard/notifications" className="relative p-2 cursor-pointer text-on-surface-variant">
               <span className="material-symbols-outlined">notifications</span>
