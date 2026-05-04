@@ -39,9 +39,7 @@ export default function Login() {
         <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-secondary-container/10 rounded-full blur-[120px]" />
         <div className="relative z-10 glass-card p-10 rounded-2xl max-w-md w-full">
           <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-on-primary">send</span>
-            </div>
+            <img src="/icons/icon-192x192.png" alt="SendBox" className="w-10 h-10 rounded-xl object-cover" />
             <span className="text-2xl font-black tracking-tighter text-white">SendBox</span>
           </div>
           <h1 className="text-4xl font-black tracking-tighter text-white mb-4 leading-tight">
@@ -64,9 +62,7 @@ export default function Login() {
         {/* Mobile logo */}
         <div className="md:hidden p-6 header-glass border-b border-white/5">
           <Link to="/" className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-on-primary text-lg">send</span>
-            </div>
+            <img src="/icons/icon-192x192.png" alt="SendBox" className="w-8 h-8 rounded-xl object-cover" />
             <span className="text-xl font-black tracking-tighter text-white">SendBox</span>
           </Link>
         </div>

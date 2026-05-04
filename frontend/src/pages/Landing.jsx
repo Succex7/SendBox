@@ -192,16 +192,18 @@ export default function Landing() {
       >
         <div className="max-w-6xl mx-auto px-6 md:px-8 h-16 flex items-center justify-between">
           <motion.div
-            className="flex items-center gap-2.5"
-            initial={{ opacity: 0, x: -16 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5, delay: 0.1 }}
-          >
-            <div className="w-8 h-8 bg-primary rounded-xl flex items-center justify-center">
-              <span className="material-symbols-outlined text-on-primary text-lg">send</span>
-            </div>
-            <span className="text-xl font-black tracking-tighter text-white">SendBox</span>
-          </motion.div>
+          className="flex items-center gap-2.5"
+          initial={{ opacity: 0, x: -16 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          <img
+            src="/icons/icon-192x192.png"
+            alt="SendBox"
+            className="w-8 h-8 rounded-xl object-cover"
+          />
+          <span className="text-xl font-black tracking-tighter text-white">SendBox</span>
+        </motion.div>
 
           <motion.div
             className="flex items-center gap-3"
@@ -379,9 +381,11 @@ export default function Landing() {
         <ScrollReveal variants={fadeIn}>
           <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-2">
-              <div className="w-6 h-6 bg-primary rounded-lg flex items-center justify-center">
-                <span className="material-symbols-outlined text-on-primary text-sm">send</span>
-              </div>
+              <img
+                src="/icons/icon-192x192.png"
+                alt="SendBox"
+                className="w-6 h-6 rounded-lg object-cover"
+              />
               <span className="font-bold text-on-surface">SendBox</span>
             </div>
             <p className="text-sm text-outline">Send files. No limits. No compression.</p>

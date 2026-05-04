@@ -125,9 +125,7 @@ const step3 = async e => {
       <div className="w-full max-w-md">
         {/* Logo */}
         <div className="flex items-center justify-center gap-2 mb-8">
-          <div className="flex items-center justify-center w-10 h-10 bg-primary rounded-xl">
-            <span className="material-symbols-outlined text-on-primary">send</span>
-          </div>
+          <img src="/icons/icon-192x192.png" alt="SendBox" className="w-10 h-10 rounded-xl object-cover" />
           <span className="text-2xl font-black tracking-tighter text-white">SendBox</span>
         </div>
 
